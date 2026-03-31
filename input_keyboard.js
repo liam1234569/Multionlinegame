@@ -39,16 +39,27 @@ const InputKeyboard = {
         });
 
         // 3. Linksklick zum Schießen
+       // 3. Linksklick Logik
         window.addEventListener('mousedown', (e) => {
-            if (document.pointerLockElement !== document.body) {
-                // Erster Klick: Maus fangen
-                document.body.requestPointerLock();
-            } else {
-                // Zweiter Klick: Schießen (nur im Zombie-Modus)
-                if (window.currentMode === 'zombies') {
-                    CombatWeapons.shoot(Renderer.scene, Engine.entities.player, Renderer.camera);
+            // Prüfen, ob das Spiel überhaupt schon gestartet wurde
+            if (window.Engine && Engine.isRunning) {
+                
+                if (document.pointerLockElement !== document.body) {
+                    // Erst jetzt wird die Maus gefangen
+                    document.body.requestPointerLock();
+                } else {
+                    // Wenn die Maus schon gefangen ist -> Schießen (nur im Zombie-Modus)
+                    if (window.currentMode === 'zombies') {
+                        CombatWeapons.shoot(Renderer.scene, Engine.entities.player, Renderer.camera);
+                    }
                 }
+                
+            } else {
+                // Wenn wir noch im Menü sind, lassen wir die Maus in Ruhe.
+                // So kannst du die Buttons für PC/Handy und den Modus normal anklicken.
+                console.log("Menü-Modus: Maus bleibt frei für Klicks.");
             }
+        });
         });
     },
 
