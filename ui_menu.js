@@ -59,10 +59,7 @@ const UI_Menu = {
             Engine.start(modeType);
         }
 
-        // Pointer Lock aktivieren, falls PC gewählt wurde
-        if (this.settings.device === 'pc') {
-            document.body.requestPointerLock();
-        }
+        
     },
 
     // 4. ZURÜCK ZUM MENÜ (z.B. nach Game Over)
