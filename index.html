@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Street Wars 3D: Modular Edition</title>
+    <title>City Defender 3D</title>
     
     <link rel="stylesheet" href="style.css">
 
-    <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
-    <script src="https://unpkg.com/cannon@0.6.2/build/cannon.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cannon.js/0.6.2/cannon.min.js"></script>
 </head>
 <body>
 
@@ -19,8 +19,8 @@
 
     <div id="main-menu" class="overlay">
         <div class="menu-content">
-            <h1>STREET WARS 3D</h1>
-            
+            <h1>CITY DEFENDER 3D</h1>
+
             <div id="ui-step-1">
                 <h3>WÄHLE DEIN SETUP</h3>
                 <button class="menu-btn" onclick="UI_Menu.selectDevice('pc')">💻 PC (WASD + MAUS)</button>
@@ -28,7 +28,7 @@
             </div>
 
             <div id="ui-step-2" class="hidden">
-                <h3>WÄHLE MISSION</h3>
+                <h3 style="margin-bottom: 20px;">WÄHLE MISSION</h3>
                 <button class="menu-btn" onclick="UI_Menu.selectMode('zombies')">🧟 ZOMBIE GASSE</button>
                 <button class="menu-btn" onclick="UI_Menu.selectMode('parkour_human')">🏃 MENSCH PARKOUR</button>
                 <button class="menu-btn" onclick="UI_Menu.selectMode('parkour_car')">🚗 AUTO PARKOUR</button>
@@ -36,48 +36,41 @@
         </div>
     </div>
 
-    <div id="game-hud" class="hidden">
-        <div id="crosshair"></div>
-        <div class="stats">
-            <div class="stat-item">PUNKTE: <span id="score-val">0</span></div>
-            <div class="health-container">
-                <div id="health-bar"></div>
-            </div>
-        </div>
+    <div id="ui-hud" class="hidden">
+        <div id="crosshair">+</div>
+        <div id="stats">Zombies: 0 | Leben: 100</div>
     </div>
 
     <div id="mobile-ui" class="hidden">
-        <div id="joystick-zone">
+        <div id="joystick-container">
             <div id="joystick-base">
-                <div id="joystick-knob"></div>
+                <div id="joystick-stick"></div>
             </div>
         </div>
-        <button id="shoot-btn">FEUER</button>
+        <button id="btn-fire">FEUER</button>
     </div>
 
     <script src="utils_helpers.js"></script>
-    
     <script src="physic_core.js"></script>
-    <script src="physic_car.js"></script>
+    <script src="engine_render.js"></script>
+    
     <script src="physic_human.js"></script>
-
+    <script src="physic_car.js"></script>
+    <script src="actor_player.js"></script>
+    <script src="actor_zombie.js"></script>
+    <script src="actor_car.js"></script>
+    
     <script src="world_alley.js"></script>
     <script src="world_parkour.js"></script>
-    <script src="actor_player.js"></script>
-    <script src="actor_car.js"></script>
-    <script src="actor_zombie.js"></script>
-
-    <script src="input_keyboard.js"></script>
-    <script src="input_joystick.js"></script>
-
     <script src="combat_weapons.js"></script>
     <script src="combat_collision.js"></script>
-
-    <script src="ui_menu.js"></script>
+    
     <script src="ui_hud.js"></script>
-
-    <script src="engine_render.js"></script>
+    <script src="ui_menu.js"></script>
+    <script src="input_keyboard.js"></script>
+    <script src="input_joystick.js"></script>
+    
     <script src="engine_main.js"></script>
 
 </body>
-</html> 
+</html>
