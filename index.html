@@ -20,13 +20,11 @@
     <div id="main-menu" class="overlay hidden">
         <div class="menu-content">
             <h1>CITY DEFENDER 3D</h1>
-
             <div id="ui-step-1">
                 <h3>WÄHLE DEIN SETUP</h3>
                 <button class="menu-btn" onclick="UI_Menu.selectDevice('pc')">💻 PC (WASD + MAUS)</button>
                 <button class="menu-btn" onclick="UI_Menu.selectDevice('mobile')">📱 HANDY (TOUCH)</button>
             </div>
-
             <div id="ui-step-2" class="hidden">
                 <h3 style="margin-bottom: 20px;">WÄHLE MISSION</h3>
                 <button class="menu-btn" onclick="UI_Menu.selectMode('zombies')">🧟 ZOMBIE GASSE</button>
@@ -43,15 +41,14 @@
 
     <div id="mobile-ui" class="hidden">
         <div id="joystick-container">
-            <div id="joystick-base">
-                <div id="joystick-stick"></div>
-            </div>
+            <div id="joystick-base"><div id="joystick-stick"></div></div>
         </div>
         <button id="btn-fire">FEUER</button>
     </div>
 
     <script src="utils_helpers.js"></script>
     <script src="physic_core.js"></script>
+    
     <script src="engine_render.js"></script>
     
     <script src="physic_human.js"></script>
@@ -63,13 +60,12 @@
     <script src="world_parkour.js"></script>
     <script src="combat_weapons.js"></script>
     <script src="combat_collision.js"></script>
-    
     <script src="ui_hud.js"></script>
     <script src="ui_menu.js"></script>
     <script src="input_keyboard.js"></script>
     <script src="input_joystick.js"></script>
     
-    <script src="engine_main.js" defer></script>
+    <script src="engine_main.js"></script>
 
 </body>
 </html>
