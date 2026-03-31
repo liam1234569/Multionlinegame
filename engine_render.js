@@ -7,11 +7,10 @@ const Renderer = {
     scene: null,
     camera: null,
     webGLRenderer: null,
-    sun: null,
-    ambientLight: null,
+    
 
     // 1. SETUP DER GRAFIK-ENGINE
-    setup() {
+    init() {
         console.log("Renderer: Initialisiere Grafik...");
 
         // Die Szene erstellen
