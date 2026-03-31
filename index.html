@@ -17,21 +17,21 @@
         <p id="loading-text">INITIALISIERE MODULE...</p>
     </div>
 
-    <div id="main-menu" class="overlay hidden">
+    <div id="main-menu" class="overlay">
         <div class="menu-content">
             <h1>STREET WARS 3D</h1>
             
             <div id="ui-step-1">
                 <h3>WÄHLE DEIN SETUP</h3>
-                <button class="menu-btn" onclick="UI.selectDevice('pc')">💻 PC (WASD + MAUS)</button>
-                <button class="menu-btn" onclick="UI.selectDevice('mobile')">📱 HANDY (TOUCH)</button>
+                <button class="menu-btn" onclick="UI_Menu.selectDevice('pc')">💻 PC (WASD + MAUS)</button>
+                <button class="menu-btn" onclick="UI_Menu.selectDevice('mobile')">📱 HANDY (TOUCH)</button>
             </div>
 
             <div id="ui-step-2" class="hidden">
                 <h3>WÄHLE MISSION</h3>
-                <button class="menu-btn" onclick="UI.selectMode('zombies')">🧟 ZOMBIE GASSE</button>
-                <button class="menu-btn" onclick="UI.selectMode('parkour_human')">🏃 MENSCH PARKOUR</button>
-                <button class="menu-btn" onclick="UI.selectMode('parkour_car')">🚗 AUTO PARKOUR</button>
+                <button class="menu-btn" onclick="UI_Menu.selectMode('zombies')">🧟 ZOMBIE GASSE</button>
+                <button class="menu-btn" onclick="UI_Menu.selectMode('parkour_human')">🏃 MENSCH PARKOUR</button>
+                <button class="menu-btn" onclick="UI_Menu.selectMode('parkour_car')">🚗 AUTO PARKOUR</button>
             </div>
         </div>
     </div>
