@@ -1,119 +1,73 @@
 /**
  * ENGINE_RENDER.JS
- * Verantwortlich für Kamera, Licht, Nebel und das Zeichnen der 3D-Szene.
+ * Verantwortlich für Kamera, Licht und das Zeichnen der 3D-Szene.
  */
-
 const Renderer = {
     scene: null,
     camera: null,
     webGLRenderer: null,
-    
+    sun: null,
+    ambientLight: null,
 
-    // 1. SETUP DER GRAFIK-ENGINE
     init() {
         console.log("Renderer: Initialisiere Grafik...");
 
-        // Die Szene erstellen
+        // 1. SZENE ERSTELLEN
         this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color(0x1a1a2e); // Tiefblaues Mitternachts-Design
-        
-        // Nebel für Atmosphäre (verdeckt das Ende der Map wie in alten GTA-Teilen)
-        this.scene.fog = new THREE.FogExp2(0x1a1a2e, 0.02);
+        // Ein schönes Himmelblau, damit es nicht mehr schwarz ist!
+        this.scene.background = new THREE.Color(0x87ceeb); 
+        this.scene.fog = new THREE.FogExp2(0x87ceeb, 0.02); // Leichter Nebel in Himmelsfarbe
 
-        // Kamera Setup (Field of View, Aspect Ratio, Near, Far)
+        // 2. KAMERA ERSTELLEN
         this.camera = new THREE.PerspectiveCamera(
             75, 
             window.innerWidth / window.innerHeight, 
             0.1, 
             1000
         );
+        // Kamera etwas nach oben und hinten setzen, damit sie nicht im Boden steckt
+        this.camera.position.set(0, 5, 10);
+        this.camera.lookAt(0, 0, 0);
 
-        // WebGL Renderer erstellen
-        this.webGLRenderer = new THREE.WebGLRenderer({
-            antialias: true, // Glättet Kanten (wichtig für "realistisch")
-            powerPreference: "high-performance"
-        });
-        
+        // 3. WEBGL RENDERER (Die eigentliche Grafik-Engine)
+        this.webGLRenderer = new THREE.WebGLRenderer({ antialias: true });
         this.webGLRenderer.setSize(window.innerWidth, window.innerHeight);
-        this.webGLRenderer.setPixelRatio(window.devicePixelRatio);
+        this.webGLRenderer.shadowMap.enabled = true; // Schatten aktivieren
         
-        // Schatten-Aktivierung (Das macht es realistisch!)
-        this.webGLRenderer.shadowMap.enabled = true;
-        this.webGLRenderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
-        // Canvas an den HTML-Body hängen
+        // WICHTIG: Das Canvas (Zeichenfläche) ins HTML einfügen
         document.body.appendChild(this.webGLRenderer.domElement);
 
-        // Beleuchtung hinzufügen
-        this.initLights();
-
-        // Fenster-Größenänderung abfangen
-        window.addEventListener('resize', () => this.onWindowResize(), false);
-    },
-
-    // 2. BELEUCHTUNGSSYSTEM
-    initLights() {
-        // Grundhelligkeit (damit Schatten nicht komplett schwarz sind)
-        this.ambientLight = new THREE.AmbientLight(0x404040, 0.5); 
+        // 4. LICHT HINZUFÜGEN (Ohne Licht bleibt alles schwarz!)
+        this.ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
         this.scene.add(this.ambientLight);
 
-        // Die "Sonne" oder "Mond" (Directional Light für Schatten)
         this.sun = new THREE.DirectionalLight(0xffffff, 1.0);
         this.sun.position.set(50, 100, 50);
         this.sun.castShadow = true;
-
-        // Schatten-Qualität optimieren
-        this.sun.shadow.mapSize.width = 2048;
-        this.sun.shadow.mapSize.height = 2048;
-        this.sun.shadow.camera.near = 0.5;
-        this.sun.shadow.camera.far = 500;
-        
-        // Bereich, in dem Schatten berechnet werden
-        const d = 50;
-        this.sun.shadow.camera.left = -d;
-        this.sun.shadow.camera.right = d;
-        this.sun.shadow.camera.top = d;
-        this.sun.shadow.camera.bottom = -d;
-
         this.scene.add(this.sun);
 
-        // Ein dezentes Punktlicht für den Spieler-Vibe
-        const pointLight = new THREE.PointLight(0x3366ff, 0.5, 10);
-        pointLight.position.set(0, 5, 0);
-        this.scene.add(pointLight);
+        // 5. RESPONSIVE DESIGN (Wenn sich die Fenstergröße ändert)
+        window.addEventListener('resize', () => {
+            if (this.camera && this.webGLRenderer) {
+                this.camera.aspect = window.innerWidth / window.innerHeight;
+                this.camera.updateProjectionMatrix();
+                this.webGLRenderer.setSize(window.innerWidth, window.innerHeight);
+            }
+        });
+
+        console.log("Renderer: Grafik erfolgreich geladen.");
     },
 
-    // 3. KAMERA-STEUERUNG (GTA / Fortnite Style)
-    updateCamera(target) {
-        if (!target) return;
-
-        // Wir berechnen einen Offset (Abstand zum Spieler)
-        const relativeCameraOffset = new THREE.Vector3(0, 4, 8); // 4 Einheiten hoch, 8 zurück
-
-        // Die Kamera-Position relativ zur Rotation des Spielers berechnen
-        const cameraOffset = relativeCameraOffset.applyMatrix4(target.matrixWorld);
-
-        // Sanftes Folgen (Lerp) für ein flüssiges Gefühl
-        this.camera.position.lerp(cameraOffset, 0.1);
-        
-        // Die Kamera schaut immer auf den Spieler (leicht über den Kopf)
-        const lookTarget = new THREE.Vector3(
-            target.position.x,
-            target.position.y + 1.5,
-            target.position.z
-        );
-        this.camera.lookAt(lookTarget);
-    },
-
-    // 4. RENDERN
+    /**
+     * Diese Funktion wird jeden Frame von der engine_main.js aufgerufen!
+     * Sie knipst quasi das Foto von der Szene.
+     */
     render() {
-        this.webGLRenderer.render(this.scene, this.camera);
-    },
-
-    // Helfer für Resizing
-    onWindowResize() {
-        this.camera.aspect = window.innerWidth / window.innerHeight;
-        this.camera.updateProjectionMatrix();
-        this.webGLRenderer.setSize(window.innerWidth, window.innerHeight);
+        if (this.webGLRenderer && this.scene && this.camera) {
+            this.webGLRenderer.render(this.scene, this.camera);
+        }
     }
 };
+
+// Global verfügbar machen
+window.Renderer = Renderer;
