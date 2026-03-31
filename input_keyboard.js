@@ -59,7 +59,7 @@ const InputKeyboard = {
                 // So kannst du die Buttons für PC/Handy und den Modus normal anklicken.
                 console.log("Menü-Modus: Maus bleibt frei für Klicks.");
             }
-        });
+      }
         });
     },
 
