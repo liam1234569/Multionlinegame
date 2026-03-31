@@ -1,93 +1,92 @@
 /**
- * ENGINE MAIN
- * Das Herzstück des Spiels. Koordiniert Renderer, Physik und Welten.
+ * CITY DEFENDER 3D - ENGINE MAIN
+ * Finale Version
  */
+
 const Engine = {
     isRunning: false,
+    lastTime: 0,
     entities: {
         player: null,
         zombies: [],
-        cars: [],
-        environment: []
-    },
-    lastTime: 0,
-
-    init() {
-        console.log("Engine: Initialisiere Systeme...");
-        
-        // 1. Renderer starten
-        if (window.Renderer) {
-            Renderer.init();
-        } else {
-            console.error("Engine Fehler: Renderer nicht gefunden!");
-        }
-
-        // 2. Physik starten
-        if (window.PhysicCore) {
-            PhysicCore.init();
-        }
-
-        // 3. Inputs aktivieren
-        if (window.InputKeyboard) InputKeyboard.init();
-        if (window.InputJoystick) InputJoystick.init();
-
-        console.log("Engine: Bereit.");
+        cars: []
     },
 
     /**
-     * Startet ein Level basierend auf der Auswahl im Menü
+     * Initialisiert die Grundsysteme beim Laden der Seite
+     */
+    init() {
+        console.log("Engine: Initialisiere Systeme...");
+
+        // Prüfung ob Renderer existiert (wichtig gegen den Dauer-Lade-Fehler)
+        if (typeof Renderer !== 'undefined') {
+            Renderer.init();
+            console.log("Renderer: OK");
+        } else {
+            console.error("Engine Fehler: Renderer nicht gefunden! Prüfe index.html Reihenfolge.");
+            return; 
+        }
+
+        if (typeof PhysicCore !== 'undefined') {
+            PhysicCore.init();
+            console.log("Physik: OK");
+        }
+
+        // Zeige das Hauptmenü an, sobald alles bereit ist
+        const loader = document.getElementById('loader-screen');
+        const mainMenu = document.getElementById('main-menu');
+        
+        if (loader) loader.classList.add('hidden');
+        if (mainMenu) mainMenu.classList.remove('hidden');
+
+        console.log("Engine: Bereit für Modus-Auswahl.");
+    },
+
+    /**
+     * Startet das eigentliche Spiel nach Klick im Menü
      */
     start(mode) {
-        console.log("Engine: Starte Modus -> " + mode);
+        if (this.isRunning) return;
+        
+        console.log("Engine: Starte Spiel-Modus -> " + mode);
         this.isRunning = true;
         window.currentMode = mode;
 
-        // Falls noch alte Reste da sind, Szene leeren
-        this.clearScene();
+        // 1. Licht und Himmel erstellen (Gegen den schwarzen Bildschirm)
+        this.setupScene();
 
-        // 1. WELT LADEN
-        if (mode === 'zombies') {
-            if (window.WorldAlley) {
-                WorldAlley.init(Renderer.scene, PhysicCore.world);
-            }
-        } else {
-            if (window.WorldParkour) {
-                WorldParkour.init(Renderer.scene, PhysicCore.world, mode);
-            }
+        // 2. Welt laden
+        if (mode === 'zombies' && typeof WorldAlley !== 'undefined') {
+            WorldAlley.init(Renderer.scene, PhysicCore.world);
+        } else if (typeof WorldParkour !== 'undefined') {
+            WorldParkour.init(Renderer.scene, PhysicCore.world, mode);
         }
 
-        // 2. SPIELER ERSTELLEN
-        this.entities.player = new ActorPlayer(Renderer.scene, PhysicCore.world);
+        // 3. Spieler spawnen
+        if (typeof ActorPlayer !== 'undefined') {
+            this.entities.player = new ActorPlayer(Renderer.scene, PhysicCore.world);
+        }
 
-        // 3. KAMERA UND LICHT EINSTELLEN
-        this.setupEnvironment();
-
-        // Ladebildschirm ausblenden
-        const loader = document.getElementById('loader-screen');
-        if (loader) loader.classList.add('hidden');
+        // HUD anzeigen
+        const hud = document.getElementById('ui-hud');
+        if (hud) hud.classList.remove('hidden');
 
         // Game Loop starten
+        this.lastTime = performance.now();
         requestAnimationFrame((t) => this.loop(t));
     },
 
-    setupEnvironment() {
-        // Umgebungslicht (damit nichts schwarz ist)
+    setupScene() {
+        // Hintergrundfarbe (Himmelblau)
+        Renderer.scene.background = new THREE.Color(0x87ceeb);
+
+        // Licht hinzufügen
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
         Renderer.scene.add(ambientLight);
 
-        // Sonnenlicht
         const sunLight = new THREE.DirectionalLight(0xffffff, 0.8);
         sunLight.position.set(10, 20, 10);
         Renderer.scene.add(sunLight);
-
-        // Hintergrundfarbe (Himmelblau)
-        Renderer.scene.background = new THREE.Color(0x87ceeb);
-    },
-
-    clearScene() {
-        // Logik zum Säubern der Szene bei Neustart
-        this.entities.zombies = [];
-        this.entities.cars = [];
     },
 
     loop(time) {
@@ -96,18 +95,15 @@ const Engine = {
         const dt = (time - this.lastTime) / 1000;
         this.lastTime = time;
 
-        // Physik-Update
+        // Physik berechnen
         if (PhysicCore.world) {
             PhysicCore.world.step(1/60);
         }
 
-        // Spieler-Update
+        // Spieler updaten
         if (this.entities.player) {
             this.entities.player.update(dt);
         }
-
-        // Alle anderen Wesen updaten
-        this.entities.zombies.forEach(z => z.update(dt));
 
         // Rendern
         Renderer.render();
@@ -116,10 +112,10 @@ const Engine = {
     }
 };
 
-// Global verfügbar machen
+// Globaler Zugriff
 window.Engine = Engine;
 
-// Warten bis alle Scripte geladen sind, dann init
+// Automatischer Start der Initialisierung
 window.addEventListener('load', () => {
     Engine.init();
 });
