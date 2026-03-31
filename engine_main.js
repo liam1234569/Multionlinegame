@@ -1,105 +1,125 @@
 /**
- * ENGINE_MAIN.JS
- * Das Gehirn des Spiels. Verbindet alle Module und startet die Game-Loop.
+ * ENGINE MAIN
+ * Das Herzstück des Spiels. Koordiniert Renderer, Physik und Welten.
  */
-
 const Engine = {
-    clock: new THREE.Clock(),
     isRunning: false,
     entities: {
         player: null,
-        vehicle: null,
-        enemies: [],
-        bullets: []
+        zombies: [],
+        cars: [],
+        environment: []
     },
+    lastTime: 0,
 
-    // 1. INITIALISIERUNG
     init() {
         console.log("Engine: Initialisiere Systeme...");
         
-        // Grafik-Setup (aus engine_render.js)
-        Renderer.setup();
-        
-        // Physik-Setup (aus physic_core.js)
-        PhysicCore.init();
+        // 1. Renderer starten
+        if (window.Renderer) {
+            Renderer.init();
+        } else {
+            console.error("Engine Fehler: Renderer nicht gefunden!");
+        }
 
-        // UI Setup
-        UI_Menu.show();
-        
+        // 2. Physik starten
+        if (window.PhysicCore) {
+            PhysicCore.init();
+        }
+
+        // 3. Inputs aktivieren
+        if (window.InputKeyboard) InputKeyboard.init();
+        if (window.InputJoystick) InputJoystick.init();
+
         console.log("Engine: Bereit.");
     },
 
-    // 2. START DES LEVELS
+    /**
+     * Startet ein Level basierend auf der Auswahl im Menü
+     */
     start(mode) {
-        window.currentMode = mode;
+        console.log("Engine: Starte Modus -> " + mode);
         this.isRunning = true;
+        window.currentMode = mode;
 
-        // Welt aufbauen (je nach Modus)
+        // Falls noch alte Reste da sind, Szene leeren
+        this.clearScene();
+
+        // 1. WELT LADEN
         if (mode === 'zombies') {
-            WorldAlley.build(Renderer.scene);
-            this.entities.player = ActorPlayer.create();
-            Renderer.scene.add(this.entities.player);
-            // Startet Zombie-Spawning
-            WorldAlley.startSpawning();
-        } else if (mode === 'parkour_car') {
-            WorldParkour.build(Renderer.scene);
-            this.entities.player = ActorCar.create(); // Visuelles Auto
-            this.entities.vehicle = PhysicCar.create(PhysicCore.world); // Physik-Auto
-            Renderer.scene.add(this.entities.player);
+            if (window.WorldAlley) {
+                WorldAlley.init(Renderer.scene, PhysicCore.world);
+            }
+        } else {
+            if (window.WorldParkour) {
+                WorldParkour.init(Renderer.scene, PhysicCore.world, mode);
+            }
         }
 
-        // Loop starten
-        this.gameLoop();
+        // 2. SPIELER ERSTELLEN
+        this.entities.player = new ActorPlayer(Renderer.scene, PhysicCore.world);
+
+        // 3. KAMERA UND LICHT EINSTELLEN
+        this.setupEnvironment();
+
+        // Ladebildschirm ausblenden
+        const loader = document.getElementById('loader-screen');
+        if (loader) loader.classList.add('hidden');
+
+        // Game Loop starten
+        requestAnimationFrame((t) => this.loop(t));
     },
 
-    // 3. DIE GAME-LOOP (läuft ca. 60 mal pro Sekunde)
-    gameLoop() {
+    setupEnvironment() {
+        // Umgebungslicht (damit nichts schwarz ist)
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        Renderer.scene.add(ambientLight);
+
+        // Sonnenlicht
+        const sunLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        sunLight.position.set(10, 20, 10);
+        Renderer.scene.add(sunLight);
+
+        // Hintergrundfarbe (Himmelblau)
+        Renderer.scene.background = new THREE.Color(0x87ceeb);
+    },
+
+    clearScene() {
+        // Logik zum Säubern der Szene bei Neustart
+        this.entities.zombies = [];
+        this.entities.cars = [];
+    },
+
+    loop(time) {
         if (!this.isRunning) return;
-        requestAnimationFrame(() => this.gameLoop());
 
-        const delta = this.clock.getDelta();
+        const dt = (time - this.lastTime) / 1000;
+        this.lastTime = time;
 
-        // A. Physik updaten
-        PhysicCore.update(delta);
-
-        // B. Input verarbeiten (PC oder Handy)
-        const move = InputKeyboard.getMovement() || InputJoystick.getMovement();
-
-        // C. Spieler/Auto bewegen
-        if (window.currentMode === 'parkour_car') {
-            PhysicCar.update(move.x, move.z);
-            // Grafik an Physik anpassen
-            this.entities.player.position.copy(this.entities.vehicle.position);
-            this.entities.player.quaternion.copy(this.entities.vehicle.quaternion);
-        } else {
-            this.entities.player.position.x += move.x * 0.2;
-            this.entities.player.position.z += move.z * 0.2;
+        // Physik-Update
+        if (PhysicCore.world) {
+            PhysicCore.world.step(1/60);
         }
 
-        // D. Kampf-Logik
-        CombatWeapons.updateBullets(Renderer.scene);
-        CombatCollision.checkBulletHits(
-            CombatWeapons.bullets, 
-            this.entities.enemies, 
-            Renderer.scene
-        );
-        CombatCollision.checkEnemyAttack(
-            this.entities.enemies, 
-            this.entities.player, 
-            delta
-        );
+        // Spieler-Update
+        if (this.entities.player) {
+            this.entities.player.update(dt);
+        }
 
-        // E. Kamera-Follow (GTA Style)
-        Renderer.updateCamera(this.entities.player);
+        // Alle anderen Wesen updaten
+        this.entities.zombies.forEach(z => z.update(dt));
 
-        // F. Rendern
+        // Rendern
         Renderer.render();
+
+        requestAnimationFrame((t) => this.loop(t));
     }
 };
 
-// Sobald die Seite geladen ist, Engine zünden
-window.onload = () => {
+// Global verfügbar machen
+window.Engine = Engine;
+
+// Warten bis alle Scripte geladen sind, dann init
+window.addEventListener('load', () => {
     Engine.init();
-    // Loader entfernen
-    document.getElementById('loader-screen').classList.add('hidden');
-};
+});
