@@ -4,68 +4,59 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>City Defender 3D</title>
-    
     <link rel="stylesheet" href="style.css">
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cannon.js/0.6.2/cannon.min.js"></script>
 </head>
 <body>
 
-    <div id="loader-screen">
-        <div class="spinner"></div>
-        <p id="loading-text">INITIALISIERE MODULE...</p>
-    </div>
-
-    <div id="main-menu" class="overlay hidden">
-        <div class="menu-content">
+    <div id="ui-layer">
+        <div id="menu-container">
             <h1>CITY DEFENDER 3D</h1>
-            <div id="ui-step-1">
-                <h3>WÄHLE DEIN SETUP</h3>
-                <button class="menu-btn" onclick="UI_Menu.selectDevice('pc')">💻 PC (WASD + MAUS)</button>
-                <button class="menu-btn" onclick="UI_Menu.selectDevice('mobile')">📱 HANDY (TOUCH)</button>
-            </div>
-            <div id="ui-step-2" class="hidden">
-                <h3 style="margin-bottom: 20px;">WÄHLE MISSION</h3>
-                <button class="menu-btn" onclick="UI_Menu.selectMode('zombies')">🧟 ZOMBIE GASSE</button>
-                <button class="menu-btn" onclick="UI_Menu.selectMode('parkour_human')">🏃 MENSCH PARKOUR</button>
-                <button class="menu-btn" onclick="UI_Menu.selectMode('parkour_car')">🚗 AUTO PARKOUR</button>
+            <div class="menu-buttons">
+                <button onclick="Engine.start('alley')">ZOMBIE GASSE</button>
+                <button onclick="Engine.start('parkour_human')">MENSCH PARKOUR</button>
+                <button onclick="Engine.start('parkour_car')">AUTO PARKOUR</button>
             </div>
         </div>
-    </div>
 
-    <div id="ui-hud" class="hidden">
-        <div id="crosshair">+</div>
-        <div id="stats">Zombies: 0 | Leben: 100</div>
-    </div>
-
-    <div id="mobile-ui" class="hidden">
-        <div id="joystick-container">
-            <div id="joystick-base"><div id="joystick-stick"></div></div>
+        <div id="hud" style="display: none;">
+            <div id="crosshair">+</div>
+            <div id="stats">
+                <span id="health-display">HP: 100</span> | 
+                <span id="score-display">Punkte: 0</span>
+            </div>
         </div>
-        <button id="btn-fire">FEUER</button>
     </div>
 
     <script src="utils_helpers.js"></script>
-    <script src="physic_core.js"></script>
-    
+    <script src="input_keyboard.js"></script>
+    <script src="input_joystick.js"></script>
+
+    <script src="physik_core.js"></script>
+    <script src="physik_human.js"></script>
+    <script src="physik_car.js"></script>
+
     <script src="engine_render.js"></script>
-    
-    <script src="physic_human.js"></script>
-    <script src="physic_car.js"></script>
+    <script src="world_alley.js"></script>
+    <script src="world_parkour.js"></script>
+
     <script src="actor_player.js"></script>
     <script src="actor_zombie.js"></script>
     <script src="actor_car.js"></script>
-    <script src="world_alley.js"></script>
-    <script src="world_parkour.js"></script>
     <script src="combat_weapons.js"></script>
     <script src="combat_collision.js"></script>
-    <script src="ui_hud.js"></script>
+
     <script src="ui_menu.js"></script>
-    <script src="input_keyboard.js"></script>
-    <script src="input_joystick.js"></script>
-    
+    <script src="ui_hud.js"></script>
     <script src="engine_main.js"></script>
 
+    <script>
+        // Startet die Engine, sobald alle Skripte geladen sind
+        window.addEventListener('load', () => {
+            console.log("Alle Skripte geladen. Initialisiere Engine...");
+            Engine.init();
+        });
+    </script>
 </body>
 </html>
